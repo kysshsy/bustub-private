@@ -187,7 +187,6 @@ bool BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) {
   pg.is_dirty_ = false;
   pg.pin_count_ = 0;
 
-  
   // 设置 page_table 和 free list
   page_table_.erase(page_id);
   free_list_.push_back(fid);

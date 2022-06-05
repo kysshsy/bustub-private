@@ -14,15 +14,14 @@
 
 namespace bustub {
 
-
 ParallelBufferPoolManager::ParallelBufferPoolManager(size_t num_instances, size_t pool_size, DiskManager *disk_manager,
                                                      LogManager *log_manager)
-  : pool_size_(pool_size),num_instances_(num_instances){
+    : pool_size_(pool_size), num_instances_(num_instances) {
   // Allocate and create individual BufferPoolManagerInstances
   for (uint32_t i = 0; i < num_instances; i++) {
-    managers_.push_back(new BufferPoolManagerInstance{pool_size, static_cast<uint32_t>(num_instances), i, disk_manager, log_manager});
+    managers_.push_back(
+        new BufferPoolManagerInstance{pool_size, static_cast<uint32_t>(num_instances), i, disk_manager, log_manager});
   }
-
 }
 
 // Update constructor to destruct all BufferPoolManagerInstances and deallocate any associated memory
@@ -40,13 +39,13 @@ BufferPoolManager *ParallelBufferPoolManager::GetBufferPoolManager(page_id_t pag
 
 Page *ParallelBufferPoolManager::FetchPgImp(page_id_t page_id) {
   // Fetch page for page_id from responsible BufferPoolManagerInstance
-  auto &buffer_pool = managers_[page_id % num_instances_]; 
+  auto &buffer_pool = managers_[page_id % num_instances_];
   return buffer_pool->FetchPage(page_id);
 }
 
 bool ParallelBufferPoolManager::UnpinPgImp(page_id_t page_id, bool is_dirty) {
   // Unpin page_id from responsible BufferPoolManagerInstance
-  auto &buffer_pool = managers_[page_id % num_instances_]; 
+  auto &buffer_pool = managers_[page_id % num_instances_];
   return buffer_pool->UnpinPage(page_id, is_dirty);
 }
 
@@ -67,7 +66,7 @@ Page *ParallelBufferPoolManager::NewPgImp(page_id_t *page_id) {
   size_t index = start_index;
   do {
     auto &buffer_pool = managers_[index];
-    
+
     auto page = buffer_pool->NewPage(page_id);
     if (page != nullptr) return page;
 
@@ -90,6 +89,5 @@ void ParallelBufferPoolManager::FlushAllPgsImp() {
     bp->FlushAllPages();
   }
 }
-
 
 }  // namespace bustub
