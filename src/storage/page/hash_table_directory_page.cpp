@@ -27,7 +27,7 @@ void HashTableDirectoryPage::SetLSN(lsn_t lsn) { lsn_ = lsn; }
 uint32_t HashTableDirectoryPage::GetGlobalDepth() { return global_depth_; }
 
 uint32_t HashTableDirectoryPage::GetGlobalDepthMask() {
-  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (32 - global_depth_)) ^ 0xFFFFFFFF);
+  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (31 - global_depth_)) ^ 0xFFFFFFFF);
 }
 
 void HashTableDirectoryPage::IncrGlobalDepth() { global_depth_++; }
@@ -40,7 +40,7 @@ void HashTableDirectoryPage::SetBucketPageId(uint32_t bucket_idx, page_id_t buck
   bucket_page_ids_[bucket_idx] = bucket_page_id;
 }
 
-uint32_t HashTableDirectoryPage::Size() { return (uint32_t)(1) << global_depth_; }
+uint32_t HashTableDirectoryPage::Size() { return (uint32_t)(2) << global_depth_; }
 
 bool HashTableDirectoryPage::CanShrink() { return false; }
 
@@ -62,13 +62,14 @@ uint32_t HashTableDirectoryPage::GetLocalHighBit(uint32_t bucket_idx) {
 }
 
 uint32_t HashTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) {
-  // 在bucket_idx的当前二进制最高位前增加一个1 (0 bucket_idx 表示之前的映射关系，现在需要增加一页来映射)
+  if (bucket_idx == 0) return 1;
+  // 在bucket_idx的当前二进制最高位 异或 
   uint32_t tmp_idx = bucket_idx;
   int l = 0;
   while (tmp_idx >>= 1) {
     l++;
   }
-  return bucket_idx & (0x1 << l);
+  return bucket_idx ^ (0x1 << (l-1));
 }
 
 /**
