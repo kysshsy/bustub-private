@@ -68,7 +68,7 @@ bool HASH_TABLE_BUCKET_TYPE::Remove(KeyType key, ValueType value, KeyComparator 
     if (!IsOccupied(i)) break;
 
     auto &kv = array_[i];
-    if (IsReadable(i) && cmp(key, kv.first) == 0) {
+    if (IsReadable(i) && cmp(key, kv.first) == 0 && value == kv.second) {
       // set unreadable
       int offset = i % 8;
       int idx = i / 8;
@@ -96,7 +96,7 @@ void HASH_TABLE_BUCKET_TYPE::RemoveAt(uint32_t bucket_idx) {
   // 占用 && 可读
   int offset = bucket_idx % 8;
   int idx = bucket_idx / 8;
-  readable_[idx] &= ~(0x1 << offset);
+  readable_[idx] |= ~(0x1 << offset);
 }
 
 template <typename KeyType, typename ValueType, typename KeyComparator>

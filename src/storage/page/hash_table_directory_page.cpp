@@ -42,11 +42,16 @@ void HashTableDirectoryPage::SetBucketPageId(uint32_t bucket_idx, page_id_t buck
 
 uint32_t HashTableDirectoryPage::Size() { return (uint32_t)(2) << global_depth_; }
 
-bool HashTableDirectoryPage::CanShrink() { return false; }
+bool HashTableDirectoryPage::CanShrink() {
+  for (uint32_t idx = 0; idx < Size(); idx++) {
+    if (GetLocalDepth(idx) >= GetGlobalDepth()) return true;
+  }
+  return false;
+}
 
 uint32_t HashTableDirectoryPage::GetLocalDepth(uint32_t bucket_idx) { return local_depths_[bucket_idx]; }
 uint32_t HashTableDirectoryPage::GetLocalDepthMask(uint32_t bucket_idx) {
-  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (32 - GetLocalDepth(bucket_idx))) ^ 0xFFFFFFFF);
+  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (31 - GetLocalDepth(bucket_idx))) ^ 0xFFFFFFFF);
 }
 
 void HashTableDirectoryPage::SetLocalDepth(uint32_t bucket_idx, uint8_t local_depth) {
@@ -63,13 +68,13 @@ uint32_t HashTableDirectoryPage::GetLocalHighBit(uint32_t bucket_idx) {
 
 uint32_t HashTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) {
   if (bucket_idx == 0) return 1;
-  // 在bucket_idx的当前二进制最高位 异或 
+  // 在bucket_idx的当前二进制最高位 异或
   uint32_t tmp_idx = bucket_idx;
   int l = 0;
   while (tmp_idx >>= 1) {
     l++;
   }
-  return bucket_idx ^ (0x1 << (l-1));
+  return bucket_idx ^ (0x1 << (l - 1));
 }
 
 /**
