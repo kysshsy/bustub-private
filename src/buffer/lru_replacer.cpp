@@ -15,19 +15,19 @@
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) : max_size(num_pages) {}
+LRUReplacer::LRUReplacer(size_t num_pages) : max_size_(num_pages) {}
 
 LRUReplacer::~LRUReplacer() = default;
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
   std::scoped_lock lock(latch_);
-  if (set.empty()) {
+  if (set_.empty()) {
     return false;
   }
 
-  frame_id_t victim = *(this->list.begin());
-  this->list.pop_front();
-  this->set.erase(victim);
+  frame_id_t victim = *(this->list_.begin());
+  this->list_.pop_front();
+  this->set_.erase(victim);
 
   if (frame_id != nullptr) {
     *frame_id = victim;
@@ -37,26 +37,26 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
   std::scoped_lock lock(latch_);
-  if (set.find(frame_id) == set.end()) {
+  if (set_.find(frame_id) == set_.end()) {
     return;
   }
 
-  list.erase(set[frame_id]);
-  set.erase(frame_id);
+  list_.erase(set_[frame_id]);
+  set_.erase(frame_id);
 }
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {
   std::scoped_lock lock(latch_);
-  if (set.find(frame_id) != set.end() || set.size() >= max_size) {
+  if (set_.find(frame_id) != set_.end() || set_.size() >= max_size_) {
     return;
   }
-  list.push_back(frame_id);
-  set.insert({frame_id, --list.end()});
+  list_.push_back(frame_id);
+  set_.insert({frame_id, --list_.end()});
 }
 
 size_t LRUReplacer::Size() {
   std::scoped_lock lock(latch_);
-  return this->set.size();
+  return this->set_.size();
 }
 
 }  // namespace bustub

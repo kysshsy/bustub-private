@@ -569,7 +569,7 @@ TEST(ParallelBufferPoolManagerTest, IntegratedTest) {
   delete disk_manager;
 }
 
-TEST(ParallelBufferPoolManagerTest, HardTest_1) {
+TEST(ParallelBufferPoolManagerTest, HardTest1) {
   page_id_t temp_page_id;
   DiskManager *disk_manager = new DiskManager("test.db");
   auto bpm = new ParallelBufferPoolManager(1, 10, disk_manager);
@@ -633,7 +633,7 @@ TEST(ParallelBufferPoolManagerTest, HardTest_1) {
   delete disk_manager;
 }
 
-TEST(ParallelBufferPoolManagerTest, HardTest_2) {
+TEST(ParallelBufferPoolManagerTest, HardTest2) {
   const int num_threads = 5;
   const int num_runs = 50;
   for (int run = 0; run < num_runs; run++) {
@@ -724,7 +724,7 @@ TEST(ParallelBufferPoolManagerTest, HardTest_2) {
   }
 }
 
-TEST(ParallelBufferPoolManagerTest, HardTest_3) {
+TEST(ParallelBufferPoolManagerTest, HardTest3) {
   const int num_threads = 5;
   const int num_runs = 50;
   for (int run = 0; run < num_runs; run++) {
@@ -839,7 +839,7 @@ TEST(ParallelBufferPoolManagerTest, HardTest_3) {
   }
 }
 
-TEST(ParallelBufferPoolManagerTest, HardTest_4) {
+TEST(ParallelBufferPoolManagerTest, HardTest4) {
   const int num_threads = 5;
   const int num_runs = 50;
   for (int run = 0; run < num_runs; run++) {

@@ -46,12 +46,12 @@ class LRUReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  size_t max_size;
+  size_t max_size_;
 
   std::mutex latch_;
-  std::list<frame_id_t> list;
+  std::list<frame_id_t> list_;
 
-  std::unordered_map<frame_id_t, std::list<frame_id_t>::iterator> set;
+  std::unordered_map<frame_id_t, std::list<frame_id_t>::iterator> set_;
 };
 
 }  // namespace bustub

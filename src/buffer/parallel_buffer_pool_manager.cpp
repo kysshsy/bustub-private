@@ -69,7 +69,9 @@ Page *ParallelBufferPoolManager::NewPgImp(page_id_t *page_id) {
     auto &buffer_pool = managers_[index];
 
     auto page = buffer_pool->NewPage(page_id);
-    if (page != nullptr) return page;
+    if (page != nullptr) {
+      return page;
+    }
 
     index = (index + 1) % num_instances_;
   } while (index != start_index);

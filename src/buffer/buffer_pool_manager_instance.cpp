@@ -52,7 +52,9 @@ bool BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) {
   std::scoped_lock lock(this->latch_);
   assert(page_id != INVALID_PAGE_ID);
 
-  if (page_table_.find(page_id) == page_table_.end()) return false;
+  if (page_table_.find(page_id) == page_table_.end()) {
+    return false;
+  }
 
   frame_id_t fid = page_table_[page_id];
   Page &pg = pages_[fid];
@@ -176,7 +178,9 @@ bool BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) {
 
   frame_id_t fid = page_table_[page_id];
   Page &pg = pages_[fid];
-  if (pg.GetPinCount() != 0) return false;
+  if (pg.GetPinCount() != 0) {
+    return false;
+  }
 
   if (pg.IsDirty()) {
     disk_manager_->WritePage(page_id, pg.GetData());

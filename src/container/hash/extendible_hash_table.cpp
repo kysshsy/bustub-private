@@ -30,7 +30,8 @@ HASH_TABLE_TYPE::ExtendibleHashTable(const std::string &name, BufferPoolManager 
   page_id_t dir_page_id;
   auto dir_page = reinterpret_cast<HashTableDirectoryPage *>(buffer_pool_manager_->NewPage(&dir_page_id));
   // 初始化 dir_page
-  page_id_t bucket_page_id_1, bucket_page_id_2;
+  page_id_t bucket_page_id_1;
+  page_id_t bucket_page_id_2;
   buffer_pool_manager_->NewPage(&bucket_page_id_1);
   buffer_pool_manager_->NewPage(&bucket_page_id_2);
   dir_page->SetLocalDepth(0, 0);
@@ -69,12 +70,12 @@ inline uint32_t HASH_TABLE_TYPE::KeyToPageId(KeyType key, HashTableDirectoryPage
 
 template <typename KeyType, typename ValueType, typename KeyComparator>
 HashTableDirectoryPage *HASH_TABLE_TYPE::FetchDirectoryPage() {
-  return reinterpret_cast<HashTableDirectoryPage *>(buffer_pool_manager_->FetchPage(directory_page_id_));
+  return reinterpret_cast<HashTableDirectoryPage *>(buffer_pool_manager_->FetchPage(directory_page_id_)->GetData());
 }
 
 template <typename KeyType, typename ValueType, typename KeyComparator>
 HASH_TABLE_BUCKET_TYPE *HASH_TABLE_TYPE::FetchBucketPage(page_id_t bucket_page_id) {
-  return reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(buffer_pool_manager_->FetchPage(bucket_page_id));
+  return reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(buffer_pool_manager_->FetchPage(bucket_page_id)->GetData());
 }
 
 /*****************************************************************************
@@ -139,7 +140,7 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   uint32_t split_idx = dir_page->GetSplitImageIndex(bucket_idx);
   page_id_t split_page_id;
   HASH_TABLE_BUCKET_TYPE *split_page =
-      reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(buffer_pool_manager_->NewPage(&split_page_id));
+      reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(buffer_pool_manager_->NewPage(&split_page_id)->GetData());
   if (split_page == nullptr) {
     buffer_pool_manager_->UnpinPage(dir_page->GetPageId(), false);
     return false;
@@ -156,9 +157,13 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   uint32_t bucket_taken = 0;
   uint32_t split_taken = 0;
   for (uint32_t i = 0; i < BUCKET_ARRAY_SIZE; i++) {
-    if (!bucket_page->IsOccupied(i)) break;
+    if (!bucket_page->IsOccupied(i)) {
+      break;
+    }
 
-    if (!bucket_page->IsReadable(i)) continue;
+    if (!bucket_page->IsReadable(i)) {
+      continue;
+    }
     if ((Hash(bucket_page->KeyAt(i)) & local_mask) != bucket_high) {
       // 转移
       bucket_taken++;
@@ -197,7 +202,9 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
 
   buffer_pool_manager_->UnpinPage(dir_page->GetPageId(), false);
   buffer_pool_manager_->UnpinPage(dir_page->GetBucketPageId(bucket_idx), result);
-  if (!result) return false;
+  if (!result) {
+    return false;
+  }
   if (empty) {
     Merge(transaction, key, value);
   }
@@ -219,8 +226,12 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
     Buckets can only be merged if their local depth is greater than 0.
   */
   uint32_t split_idx = dir_page->GetSplitImageIndex(bucket_idx);
-  if (dir_page->GetLocalDepth(bucket_idx) == 0) return;
-  if (dir_page->GetLocalDepth(bucket_idx) != dir_page->GetLocalDepth(split_idx)) return;
+  if (dir_page->GetLocalDepth(bucket_idx) == 0) {
+    return;
+  }
+  if (dir_page->GetLocalDepth(bucket_idx) != dir_page->GetLocalDepth(split_idx)) {
+    return;
+  }
 
   buffer_pool_manager_->DeletePage(dir_page->GetBucketPageId(bucket_idx));
   dir_page->SetBucketPageId(bucket_idx, split_idx);
