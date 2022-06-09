@@ -107,7 +107,7 @@ void HASH_TABLE_BUCKET_TYPE::RemoveAt(uint32_t bucket_idx) {
   // 占用 && 可读
   uint32_t offset = bucket_idx % 8;
   uint32_t idx = bucket_idx / 8;
-  readable_[idx] |= ~(0x1 << offset);
+  readable_[idx] &= ~(0x1 << offset);
 }
 
 template <typename KeyType, typename ValueType, typename KeyComparator>

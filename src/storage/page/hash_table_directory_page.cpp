@@ -27,7 +27,7 @@ void HashTableDirectoryPage::SetLSN(lsn_t lsn) { lsn_ = lsn; }
 uint32_t HashTableDirectoryPage::GetGlobalDepth() { return global_depth_; }
 
 uint32_t HashTableDirectoryPage::GetGlobalDepthMask() {
-  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (31 - global_depth_)) ^ 0xFFFFFFFF);
+  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (30 - global_depth_)) ^ 0xFFFFFFFF);
 }
 
 void HashTableDirectoryPage::IncrGlobalDepth() { global_depth_++; }
@@ -53,7 +53,7 @@ bool HashTableDirectoryPage::CanShrink() {
 
 uint32_t HashTableDirectoryPage::GetLocalDepth(uint32_t bucket_idx) { return local_depths_[bucket_idx]; }
 uint32_t HashTableDirectoryPage::GetLocalDepthMask(uint32_t bucket_idx) {
-  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (31 - GetLocalDepth(bucket_idx))) ^ 0xFFFFFFFF);
+  return static_cast<uint32_t>((static_cast<int32_t>(0x80000000) >> (30 - GetLocalDepth(bucket_idx))) ^ 0xFFFFFFFF);
 }
 
 void HashTableDirectoryPage::SetLocalDepth(uint32_t bucket_idx, uint8_t local_depth) {
@@ -69,16 +69,7 @@ uint32_t HashTableDirectoryPage::GetLocalHighBit(uint32_t bucket_idx) {
 }
 
 uint32_t HashTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) {
-  if (bucket_idx == 0) {
-    return 1;
-  }
-  // 在bucket_idx的当前二进制最高位 异或
-  uint32_t tmp_idx = bucket_idx >> 1;
-  int l = 0;
-  while (static_cast<bool>(tmp_idx >>= 1)) {
-    l++;
-  }
-  return bucket_idx ^ (0x1 << l);
+  return bucket_idx ^ (0x1 << GetLocalDepth(bucket_idx));
 }
 
 /**
