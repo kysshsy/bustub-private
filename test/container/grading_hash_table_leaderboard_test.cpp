@@ -199,5 +199,4 @@ TEST(HashTableLeaderboardTest, Time) {
   HashTableLeaderboardTestCall();
   TEST_TIMEOUT_FAIL_END(3 * 1000 * 120)
 }
-
 }  // namespace bustub
