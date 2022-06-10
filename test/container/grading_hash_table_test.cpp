@@ -27,7 +27,7 @@ class ZeroHashFunction : public HashFunction<KeyType> {
 };
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_SampleTest) {
+TEST(HashTableTest, SampleTest) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -446,7 +446,7 @@ void GenericTestCall(void (*func)(KeyType, ValueType, KeyComparator)) {
   func(key, value, comparator);
 }
 
-TEST(HashTableTest, DISABLED_InsertTest) {
+TEST(HashTableTest, InsertTest) {
   InsertTestCall(1, 1, IntComparator());
 
   GenericTestCall<GenericKey<8>, RID, GenericComparator<8>>(InsertTestCall);
@@ -455,7 +455,7 @@ TEST(HashTableTest, DISABLED_InsertTest) {
   GenericTestCall<GenericKey<64>, RID, GenericComparator<64>>(InsertTestCall);
 }
 
-TEST(HashTableTest, DISABLED_RemoveTest) {
+TEST(HashTableTest, RemoveTest) {
   RemoveTestCall(1, 1, IntComparator());
 
   GenericTestCall<GenericKey<8>, RID, GenericComparator<8>>(RemoveTestCall);
@@ -464,7 +464,7 @@ TEST(HashTableTest, DISABLED_RemoveTest) {
   GenericTestCall<GenericKey<64>, RID, GenericComparator<64>>(RemoveTestCall);
 }
 
-TEST(HashTableTest, DISABLED_SplitGrowTest) {
+TEST(HashTableTest, SplitGrowTest) {
   SplitGrowTestCall(1, 1, IntComparator());
 
   GenericTestCall<GenericKey<8>, RID, GenericComparator<8>>(SplitGrowTestCall);
@@ -473,7 +473,7 @@ TEST(HashTableTest, DISABLED_SplitGrowTest) {
   GenericTestCall<GenericKey<64>, RID, GenericComparator<64>>(SplitGrowTestCall);
 }
 
-TEST(HashTableTest, DISABLED_GrowShrinkTest) {
+TEST(HashTableTest, GrowShrinkTest) {
   GrowShrinkTestCall(1, 1, IntComparator());
 
   GenericTestCall<GenericKey<8>, RID, GenericComparator<8>>(GrowShrinkTestCall);
@@ -482,7 +482,7 @@ TEST(HashTableTest, DISABLED_GrowShrinkTest) {
   GenericTestCall<GenericKey<64>, RID, GenericComparator<64>>(GrowShrinkTestCall);
 }
 
-TEST(HashTableTest, DISABLED_IntegratedConcurrencyTest) {
+TEST(HashTableTest, IntegratedConcurrencyTest) {
   const int num_threads = 5;
   const int num_runs = 50;
 
@@ -560,7 +560,7 @@ TEST(HashTableTest, DISABLED_IntegratedConcurrencyTest) {
   }
 }
 
-TEST(HashTableTest, DISABLED_GrowShrinkConcurrencyTest) {
+TEST(HashTableTest, GrowShrinkConcurrencyTest) {
   const int num_threads = 5;
   const int num_runs = 50;
 
