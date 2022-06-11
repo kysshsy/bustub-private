@@ -119,7 +119,7 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   uint32_t bucket_idx = KeyToDirectoryIndex(key, dir_page);
   uint32_t gd = dir_page->GetGlobalDepth();
   uint32_t ld = dir_page->GetLocalDepth(bucket_idx);
-  
+
   page_id_t bucket_page_id = dir_page->GetBucketPageId(bucket_idx);
   page_id_t split_page_id;
   Page *tmp_page = buffer_pool_manager_->NewPage(&split_page_id);
@@ -127,8 +127,8 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
     buffer_pool_manager_->UnpinPage(directory_page_id_, false);
     return false;
   }
-  HASH_TABLE_BUCKET_TYPE *split_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE*>(tmp_page->GetData());
-  HASH_TABLE_BUCKET_TYPE *bucket_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE*>(FetchBucketPage(bucket_page_id));
+  HASH_TABLE_BUCKET_TYPE *split_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(tmp_page->GetData());
+  HASH_TABLE_BUCKET_TYPE *bucket_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(FetchBucketPage(bucket_page_id));
   /*
    * 1. local depth小于 global depth，则只需要分裂一倍 bucket 并且增加local depth
    * 2. local depth等于 global depth, directory page的槽需要增加 增加新增部分槽的映射关系
@@ -150,7 +150,6 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
       dir_page->IncrLocalDepth(target_idx);
     }
   }
-  
 
   uint32_t split_taken = 0;
   uint32_t bucket_taken = 0;
@@ -192,18 +191,14 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
   uint32_t bucket_idx = KeyToDirectoryIndex(key, dir_page);
   page_id_t bucket_page_id = dir_page->GetBucketPageId(bucket_idx);
   HASH_TABLE_BUCKET_TYPE *bucket_page = FetchBucketPage(bucket_page_id);
-  if (bucket_page->Remove(key, value, comparator_) == false) {
-    buffer_pool_manager_->UnpinPage(directory_page_id_, false);
-    buffer_pool_manager_->UnpinPage(bucket_page_id, false);
-    return false;
-  }
+  bool result = bucket_page->Remove(key, value, comparator_);
   if (bucket_page->IsEmpty()) {
     Merge(transaction, key, value);
   }
 
   buffer_pool_manager_->UnpinPage(directory_page_id_, false);
-  buffer_pool_manager_->UnpinPage(bucket_page_id, true);
-  return true;
+  buffer_pool_manager_->UnpinPage(bucket_page_id, result);
+  return result;
 }
 
 /*****************************************************************************
@@ -225,12 +220,12 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
   page_id_t split_page_id = dir_page->GetBucketPageId(split_idx);
   uint32_t bucket_depth = dir_page->GetLocalDepth(bucket_idx);
   uint32_t split_depth = dir_page->GetLocalDepth(split_idx);
-    
+
   if (bucket_depth == 0 || bucket_page_id == split_page_id || bucket_depth != split_depth) {
     buffer_pool_manager_->UnpinPage(directory_page_id_, false);
     return;
   }
-  HASH_TABLE_BUCKET_TYPE * bucket_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(FetchBucketPage(bucket_page_id));
+  HASH_TABLE_BUCKET_TYPE *bucket_page = reinterpret_cast<HASH_TABLE_BUCKET_TYPE *>(FetchBucketPage(bucket_page_id));
   // 并发问题 可能在remove到merge之间 发生了改变
   if (!bucket_page->IsEmpty()) {
     buffer_pool_manager_->UnpinPage(directory_page_id_, false);
@@ -241,7 +236,7 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
   // 建立映射 减少local depth
   for (uint32_t i = 0; i < dir_page->Size(); i++) {
     page_id_t cur_page_id = dir_page->GetBucketPageId(i);
-    if ( cur_page_id == bucket_page_id) {
+    if (cur_page_id == bucket_page_id) {
       dir_page->SetBucketPageId(i, split_page_id);
       dir_page->SetLocalDepth(i, split_depth - 1);
     } else if (cur_page_id == split_page_id) {
@@ -252,7 +247,7 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
   while (dir_page->CanShrink()) {
     // 直接减少 slot大小
     dir_page->DecrGlobalDepth();
-  }  
+  }
 
   buffer_pool_manager_->UnpinPage(directory_page_id_, true);
   buffer_pool_manager_->UnpinPage(bucket_page_id, false);

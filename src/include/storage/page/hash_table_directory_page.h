@@ -119,7 +119,7 @@ class HashTableDirectoryPage {
   void IncrGlobalDepth();
 
   /**
-   *  must call before IncrLocalDepth  
+   *  must call before IncrLocalDepth
    */
   void GrowDirectory();
 
