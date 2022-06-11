@@ -119,6 +119,11 @@ class HashTableDirectoryPage {
   void IncrGlobalDepth();
 
   /**
+   *  must call before IncrLocalDepth  
+   */
+  void GrowDirectory();
+
+  /**
    * Decrement the global depth of the directory
    */
   void DecrGlobalDepth();

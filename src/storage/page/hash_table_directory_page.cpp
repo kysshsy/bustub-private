@@ -46,10 +46,10 @@ bool HashTableDirectoryPage::CanShrink() {
   for (uint32_t idx = 0; idx < Size(); idx++) {
     assert(GetLocalDepth(idx) <= GetGlobalDepth());
     if (GetLocalDepth(idx) == GetGlobalDepth()) {
-      return true;
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 uint32_t HashTableDirectoryPage::GetLocalDepth(uint32_t bucket_idx) { return local_depths_[bucket_idx]; }
@@ -62,6 +62,15 @@ void HashTableDirectoryPage::SetLocalDepth(uint32_t bucket_idx, uint8_t local_de
 }
 
 void HashTableDirectoryPage::IncrLocalDepth(uint32_t bucket_idx) { local_depths_[bucket_idx]++; }
+
+void HashTableDirectoryPage::GrowDirectory() {
+  // must call before IncrLocalDepth
+  for (uint32_t i = 0; i < Size(); i++) {
+    uint32_t target_idx = i | (0x1 << global_depth_);
+    SetBucketPageId(target_idx, GetBucketPageId(i));
+    SetLocalDepth(target_idx, GetLocalDepth(i));
+  }
+}
 
 void HashTableDirectoryPage::DecrLocalDepth(uint32_t bucket_idx) { local_depths_[bucket_idx]--; }
 
