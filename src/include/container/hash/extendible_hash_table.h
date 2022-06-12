@@ -25,7 +25,7 @@
 namespace bustub {
 
 #define HASH_TABLE_TYPE ExtendibleHashTable<KeyType, ValueType, KeyComparator>
-
+#define MAX_GLOBAL_DEPTH 9
 /**
  * Implementation of extendible hash table that is backed by a buffer pool
  * manager. Non-unique keys are supported. Supports insert and delete. The

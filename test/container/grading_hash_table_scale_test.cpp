@@ -181,7 +181,7 @@ void ScaleTestCall() {
   auto *bpm = new BufferPoolManagerInstance(4, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("foo_pk", bpm, IntComparator(), HashFunction<int>());
 
-  int num_keys = 100000;  // index can fit around 225k int-int pairs
+  int num_keys = 200000;  // index can fit around 225k int-int pairs
 
   // Create header_page
   page_id_t page_id;
@@ -282,7 +282,7 @@ void ScaleTestCall() {
  * Score: 5
  * Description: Insert 200k keys to verify the table capacity
  */
-TEST(HashTableScaleTest, DISABLED_ScaleTest) { ScaleTestCall(); }
+TEST(HashTableScaleTest, ScaleTest) { ScaleTestCall(); }
 
 /*
  * Score: 5
