@@ -18,11 +18,40 @@ namespace bustub {
 
 AggregationExecutor::AggregationExecutor(ExecutorContext *exec_ctx, const AggregationPlanNode *plan,
                                          std::unique_ptr<AbstractExecutor> &&child)
-    : AbstractExecutor(exec_ctx) {}
+    : AbstractExecutor(exec_ctx),
+      plan_(plan),
+      child_(std::move(child)),
+      aht_(plan->GetAggregates(), plan->GetAggregateTypes()),
+      aht_iterator_(aht_.Begin()) {}
 
-void AggregationExecutor::Init() {}
+void AggregationExecutor::Init() {
+  assert(child_);
+  child_->Init();
+  Tuple c_tuple;
+  while (child_->Next(&c_tuple, nullptr)) {
+    aht_.InsertCombine(MakeAggregateKey(&c_tuple), MakeAggregateValue(&c_tuple));
+  }
+  aht_iterator_ = aht_.Begin();
+}
 
-bool AggregationExecutor::Next(Tuple *tuple, RID *rid) { return false; }
+bool AggregationExecutor::Next(Tuple *tuple, RID *rid) {
+  while (aht_iterator_ != aht_.End()) {
+    auto key = aht_iterator_.Key();
+    auto value = aht_iterator_.Val();
+    ++aht_iterator_;
+    if (plan_->GetHaving() != nullptr &&
+        !plan_->GetHaving()->EvaluateAggregate(value.aggregates_, value.aggregates_).GetAs<bool>()) {
+      continue;
+    }
+    if (tuple != nullptr) {
+      // TODO(me): group by 数据 和 agg 数据 如何转化成最终的 schema
+      *tuple = Tuple(value.aggregates_, plan_->OutputSchema());
+    }
+    return true;
+  }
+
+  return false;
+}
 
 const AbstractExecutor *AggregationExecutor::GetChildExecutor() const { return child_.get(); }
 
