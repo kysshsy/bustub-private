@@ -44,8 +44,12 @@ bool AggregationExecutor::Next(Tuple *tuple, RID *rid) {
       continue;
     }
     if (tuple != nullptr) {
-      // TODO(me): group by 数据 和 agg 数据 如何转化成最终的 schema
-      *tuple = Tuple(value.aggregates_, plan_->OutputSchema());
+      // TODO(me): group by 数据  agg 数据 如何转化成最终的 schema  
+      std::vector<Value> ret;
+      for (auto &col : plan_->OutputSchema()->GetColumns()) {
+        ret.emplace_back(col.GetExpr()->EvaluateAggregate(key.group_bys_, value.aggregates_));
+      }
+      *tuple = Tuple(ret, plan_->OutputSchema());
     }
     return true;
   }
