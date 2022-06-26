@@ -30,7 +30,13 @@ bool SeqScanExecutor::Next(Tuple *tuple, RID *rid) {
   while (it_ != th->End()) {
     if (predicate_ == nullptr || predicate_->Evaluate(&(*it_), schema_).GetAs<bool>()) {
       if (tuple != nullptr) {
-        *tuple = *it_;
+        std::vector<Value> vals;
+        auto &o_schema = plan_->OutputSchema()->GetColumns();
+        auto &t_schema = table_info_->schema_;
+        for (auto &c : o_schema) {
+          vals.push_back(c.GetExpr()->Evaluate(&(*it_), &t_schema));
+        } 
+        *tuple = Tuple(vals, plan_->OutputSchema());
       }
       if (rid != nullptr) {
         *rid = it_->GetRid();

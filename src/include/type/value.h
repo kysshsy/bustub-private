@@ -137,6 +137,10 @@ class Value {
   // Create a copy of this value
   inline Value Copy() const { return Type::GetInstance(type_id_)->Copy(*this); }
 
+  bool operator==(const Value &rhs) const {
+    return CompareEquals(rhs) == CmpBool::CmpTrue;
+  }
+
  protected:
   // The actual value item
   union Val {

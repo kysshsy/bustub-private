@@ -16,9 +16,11 @@
 #include <vector>
 
 #include "execution/plans/abstract_plan.h"
+#include "common/util/hash_util.h"
 
 namespace bustub {
 
+typedef Value HashJoinKey;
 /**
  * Hash join performs a JOIN operation with a hash table.
  */
@@ -66,3 +68,16 @@ class HashJoinPlanNode : public AbstractPlanNode {
 };
 
 }  // namespace bustub
+
+namespace std {
+
+/** Implements std::hash on AggregateKey */
+template <>
+struct hash<bustub::HashJoinKey> {
+  std::size_t operator()(const bustub::HashJoinKey &join_key) const {
+    size_t curr_hash = 0;
+    curr_hash = bustub::HashUtil::CombineHashes(curr_hash, bustub::HashUtil::HashValue(&join_key));
+    return curr_hash;
+  }
+};
+}

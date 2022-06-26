@@ -53,5 +53,17 @@ class DistinctExecutor : public AbstractExecutor {
   const DistinctPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
+  /** The hash table save the tuples */
+  std::unordered_set<DistinctValue> set_;
+
+  DistinctValue MakeDistinctValue(const Tuple &tuple)  {
+    auto schema = GetOutputSchema();
+    std::vector<Value> values(schema->GetColumnCount());
+    for (uint32_t i = 0; i < schema->GetColumnCount(); i++) {
+      values[i] = tuple.GetValue(schema, i);
+    }
+    return {values};
+  }
 };
 }  // namespace bustub
+

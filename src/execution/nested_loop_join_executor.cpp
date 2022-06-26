@@ -54,19 +54,11 @@ bool NestedLoopJoinExecutor::Next(Tuple *tuple, RID *rid) {
     auto r_schema = right_executor_->GetOutputSchema();
     if (plan_->Predicate()->EvaluateJoin(&left_tuple_, l_schema, &right_tuple, r_schema).GetAs<bool>()) {
       if (tuple != nullptr) {
-        // join tuple 按合适的schema 输出
-        auto l_columns = l_schema->GetColumnCount();
-        auto r_columns = r_schema->GetColumnCount();
-        std::vector<Value> values(l_columns + r_columns);
-        // TODO(unknown): left tuple可以预先取出
-        size_t i;
-        for (i = 0; i < l_columns; i++) {
-          values[i] = left_tuple_.GetValue(l_schema, i);
+        std::vector<Value> vals;
+        for (const auto &c : plan_->OutputSchema()->GetColumns()) {
+          vals.emplace_back(c.GetExpr()->EvaluateJoin(&left_tuple_, l_schema, &right_tuple, r_schema));
         }
-        for (size_t j = 0; j < r_columns; j++) {
-          values[i + j] = right_tuple.GetValue(r_schema, j);
-        }
-        *tuple = Tuple(values, plan_->OutputSchema());
+        *tuple = Tuple(vals, plan_->OutputSchema());
       }
       return true;
     }
