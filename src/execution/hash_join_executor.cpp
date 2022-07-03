@@ -27,7 +27,8 @@ void HashJoinExecutor::Init() {
   right_child_->Init();
   // build
   Tuple tuple;
-  while (left_child_->Next(&tuple, nullptr)) {
+  RID rid;
+  while (left_child_->Next(&tuple, &rid)) {
     auto value = plan_->LeftJoinKeyExpression()->Evaluate(&tuple, left_child_->GetOutputSchema());
     ht_[value].push_back(tuple);
   }
